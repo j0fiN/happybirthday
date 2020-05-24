@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify, abort
+import os
+import dotenv
 import pymongo
+dotenv.load_dotenv()
 def connect():
-    cluster = pymongo.MongoClient("mongodb+srv://Jofin:JT9wYx0RQKObQVvO@cluster0-e29hp.mongodb.net"
-                                  "/test?retryWrites=true&w=majority")
+    cluster = pymongo.MongoClient(os.getenv('URL_DB'))
     db = cluster["birthday"]
     coll = db['birthday']
     return coll
@@ -12,10 +14,10 @@ app = Flask(__name__)
 @app.route('/')
 @app.route("/<string:name>", methods = ["GET"])
 def req_name(name = None):
-    if request.headers.get('key')=="1234":
+    if request.headers.get('key') == os.getenv('API_KEY'):
         if name is not None:
             req = coll.find({'name':name})
-            if req.count()==0:return "Invalid request.pls try again"
+            if req.count() == 0:return "Invalid request.pls try again"
             else:
                 for i in req:
                     return jsonify(i)
@@ -26,6 +28,6 @@ def req_name(name = None):
 
 if __name__=="__main__":
     coll = connect()
-    app.run(debug=False, port=5001,)
+    app.run()
 
 
